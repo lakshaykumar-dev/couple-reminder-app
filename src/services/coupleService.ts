@@ -5,6 +5,8 @@ import {
   addDoc,
   updateDoc,
   deleteDoc,
+  getDocs,
+  where,
   onSnapshot,
   query,
   orderBy,
@@ -20,9 +22,6 @@ const getItemsCacheKey = (coupleId: string) => `@couple_items_cache_${coupleId}`
 
 export const DEFAULT_TABS: Array<Omit<CoupleTab, 'id'>> = [
   { name: 'Grocery', icon: '🛒', order: 1 },
-  { name: 'Chores', icon: '🧹', order: 2 },
-  { name: 'Date Night', icon: '🍷', order: 3 },
-  { name: 'Reminders', icon: '⏰', order: 4 },
 ];
 
 // Load saved local profile (My Name, Partner Name, Couple Space ID)
@@ -135,10 +134,18 @@ export async function addNewTab(
   return id;
 }
 
-// Delete a tab
+// Delete a tab and all its items
 export async function deleteTab(coupleId: string, tabId: string) {
   const tabDoc = doc(db, 'couples', coupleId, 'tabs', tabId);
   await deleteDoc(tabDoc);
+
+  try {
+    const itemsCol = collection(db, 'couples', coupleId, 'items');
+    const snap = await getDocs(query(itemsCol, where('tabId', '==', tabId)));
+    await Promise.all(snap.docs.map((d) => deleteDoc(d.ref)));
+  } catch (e) {
+    console.error('Failed to clean up tab items:', e);
+  }
 }
 
 // Real-time Single Listener for ALL Couple Items

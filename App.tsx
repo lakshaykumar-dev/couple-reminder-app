@@ -27,6 +27,7 @@ import {
   subscribeToTabs,
   subscribeToAllItems,
   addNewTab,
+  deleteTab,
   addItem,
   toggleItem,
   deleteItem,
@@ -246,6 +247,28 @@ function MainScreen() {
     }
   };
 
+  // Handle Delete Tab
+  const handleDeleteTab = (tab: CoupleTab) => {
+    Alert.alert(
+      'Delete Tab',
+      `Delete "${tab.name}" and all items inside it?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteTab(profile.coupleId, tab.id);
+            } catch (e: any) {
+              Alert.alert('Error', e.message || 'Could not delete tab.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   // Handle Profile Update
   const handleSaveProfile = async (newProfile: CoupleProfile) => {
     setProfile(newProfile);
@@ -296,6 +319,7 @@ function MainScreen() {
         onSelectTab={setActiveTabId}
         onOpenAddTab={() => setAddTabVisible(true)}
         tabItemCounts={tabItemCounts}
+        onLongPressTab={handleDeleteTab}
       />
 
       {/* Items List Content */}

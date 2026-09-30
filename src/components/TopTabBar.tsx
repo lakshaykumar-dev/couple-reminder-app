@@ -14,6 +14,7 @@ interface TopTabBarProps {
   onSelectTab: (tabId: string) => void;
   onOpenAddTab: () => void;
   tabItemCounts?: { [tabId: string]: number };
+  onLongPressTab?: (tab: CoupleTab) => void;
 }
 
 export const TopTabBar: React.FC<TopTabBarProps> = ({
@@ -22,6 +23,7 @@ export const TopTabBar: React.FC<TopTabBarProps> = ({
   onSelectTab,
   onOpenAddTab,
   tabItemCounts = {},
+  onLongPressTab,
 }) => {
   return (
     <View style={styles.container}>
@@ -39,6 +41,8 @@ export const TopTabBar: React.FC<TopTabBarProps> = ({
               key={tab.id}
               activeOpacity={0.7}
               onPress={() => onSelectTab(tab.id)}
+              onLongPress={() => onLongPressTab && onLongPressTab(tab)}
+              delayLongPress={500}
               style={[styles.tabButton, isActive && styles.tabButtonActive]}
             >
               <Text style={styles.tabIcon}>{tab.icon || '📌'}</Text>

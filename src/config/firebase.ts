@@ -15,7 +15,7 @@ export const firebaseConfig = {
 // Initialize Firebase App singleton
 export const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-// Initialize Firestore with long-polling to ensure stable real-time connections on Android
+// Initialize Firestore with auto-detect long-polling for stable Android connection
 export const db = initializeFirestore(app, {
-  experimentalForceLongPolling: true,
+  experimentalAutoDetectLongPolling: true,
 });
