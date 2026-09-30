@@ -209,6 +209,54 @@ export async function addItem(
   );
 }
 
+// Update / Edit an Item
+export async function updateItem(
+  coupleId: string,
+  itemId: string,
+  text: string,
+  quantity: string,
+  tabId: string,
+  tabName: string,
+  actorName: string
+) {
+  const itemDoc = doc(db, 'couples', coupleId, 'items', itemId);
+  await updateDoc(itemDoc, {
+    text: text.trim(),
+    quantity: quantity.trim(),
+    tabId,
+    updatedAt: Date.now(),
+  });
+
+  const qtyText = quantity.trim() ? ` (${quantity.trim()})` : '';
+  await logActivity(
+    coupleId,
+    `${actorName} updated "${text.trim()}${qtyText}" in ${tabName}`,
+    actorName
+  );
+}
+
+// Update / Edit a Tab
+export async function updateTab(
+  coupleId: string,
+  tabId: string,
+  name: string,
+  icon: string,
+  actorName: string
+) {
+  const tabDoc = doc(db, 'couples', coupleId, 'tabs', tabId);
+  await updateDoc(tabDoc, {
+    name: name.trim(),
+    icon: icon.trim() || '📌',
+    updatedAt: Date.now(),
+  });
+
+  await logActivity(
+    coupleId,
+    `${actorName} updated tab "${name.trim()}"`,
+    actorName
+  );
+}
+
 // Toggle Item completion
 export async function toggleItem(
   coupleId: string,

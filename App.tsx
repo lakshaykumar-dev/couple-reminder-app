@@ -27,8 +27,10 @@ import {
   subscribeToTabs,
   subscribeToAllItems,
   addNewTab,
+  updateTab,
   deleteTab,
   addItem,
+  updateItem,
   toggleItem,
   deleteItem,
   subscribeToPartnerActivity,
@@ -37,6 +39,8 @@ import { TopTabBar } from './src/components/TopTabBar';
 import { ItemRow } from './src/components/ItemRow';
 import { NotificationBanner } from './src/components/NotificationBanner';
 import { AddTabModal } from './src/components/AddTabModal';
+import { EditTabModal } from './src/components/EditTabModal';
+import { EditItemModal } from './src/components/EditItemModal';
 import { PairingModal } from './src/components/PairingModal';
 
 function MainScreen() {
@@ -50,6 +54,10 @@ function MainScreen() {
   });
   const [isPairingVisible, setPairingVisible] = useState(false);
   const [isAddTabVisible, setAddTabVisible] = useState(false);
+
+  // Edit Modals State
+  const [editingItem, setEditingItem] = useState<CoupleItem | null>(null);
+  const [editingTab, setEditingTab] = useState<CoupleTab | null>(null);
 
   // Tabs & All Items (Cached in memory for 0ms lag-free tab switching)
   const [tabs, setTabs] = useState<CoupleTab[]>([]);
@@ -247,26 +255,79 @@ function MainScreen() {
     }
   };
 
-  // Handle Delete Tab
-  const handleDeleteTab = (tab: CoupleTab) => {
+  // Handle Manage Tab (Edit or Delete)
+  const handleManageTab = (tab: CoupleTab) => {
     Alert.alert(
-      'Delete Tab',
-      `Delete "${tab.name}" and all items inside it?`,
+      `Manage "${tab.name}"`,
+      'Choose an option:',
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Delete',
+          text: '✏️ Edit Tab',
+          onPress: () => setEditingTab(tab),
+        },
+        {
+          text: '🗑️ Delete Tab',
           style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteTab(profile.coupleId, tab.id);
-            } catch (e: any) {
-              Alert.alert('Error', e.message || 'Could not delete tab.');
-            }
+          onPress: () => {
+            Alert.alert(
+              'Delete Tab',
+              `Delete "${tab.name}" and all items inside it?`,
+              [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                  text: 'Delete',
+                  style: 'destructive',
+                  onPress: async () => {
+                    try {
+                      await deleteTab(profile.coupleId, tab.id);
+                    } catch (e: any) {
+                      Alert.alert('Error', e.message || 'Could not delete tab.');
+                    }
+                  },
+                },
+              ]
+            );
           },
         },
       ]
     );
+  };
+
+  // Handle Save Edited Item
+  const handleSaveEditedItem = async (
+    itemId: string,
+    newText: string,
+    newQuantity: string,
+    newTabId: string
+  ) => {
+    try {
+      const targetTab = tabs.find((t) => t.id === newTabId) || currentTab;
+      await updateItem(
+        profile.coupleId,
+        itemId,
+        newText,
+        newQuantity,
+        newTabId,
+        targetTab?.name || 'Tab',
+        profile.myName
+      );
+    } catch (e: any) {
+      Alert.alert('Error', e.message || 'Could not update item.');
+    }
+  };
+
+  // Handle Save Edited Tab
+  const handleSaveEditedTab = async (
+    tabId: string,
+    newName: string,
+    newIcon: string
+  ) => {
+    try {
+      await updateTab(profile.coupleId, tabId, newName, newIcon, profile.myName);
+    } catch (e: any) {
+      Alert.alert('Error', e.message || 'Could not update tab.');
+    }
   };
 
   // Handle Profile Update
@@ -319,7 +380,7 @@ function MainScreen() {
         onSelectTab={setActiveTabId}
         onOpenAddTab={() => setAddTabVisible(true)}
         tabItemCounts={tabItemCounts}
-        onLongPressTab={handleDeleteTab}
+        onLongPressTab={handleManageTab}
       />
 
       {/* Items List Content */}
@@ -339,6 +400,7 @@ function MainScreen() {
                 item={item}
                 onToggle={handleToggle}
                 onDelete={handleDelete}
+                onEdit={(it) => setEditingItem(it)}
               />
             )}
             contentContainerStyle={styles.listContent}
@@ -400,6 +462,21 @@ function MainScreen() {
         visible={isAddTabVisible}
         onClose={() => setAddTabVisible(false)}
         onAddTab={handleCreateTab}
+      />
+
+      <EditItemModal
+        visible={!!editingItem}
+        item={editingItem}
+        tabs={tabs}
+        onClose={() => setEditingItem(null)}
+        onSave={handleSaveEditedItem}
+      />
+
+      <EditTabModal
+        visible={!!editingTab}
+        tab={editingTab}
+        onClose={() => setEditingTab(null)}
+        onSave={handleSaveEditedTab}
       />
 
       <PairingModal

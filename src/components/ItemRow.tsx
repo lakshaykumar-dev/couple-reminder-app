@@ -11,12 +11,14 @@ interface ItemRowProps {
   item: CoupleItem;
   onToggle: (item: CoupleItem) => void;
   onDelete: (id: string) => void;
+  onEdit?: (item: CoupleItem) => void;
 }
 
 export const ItemRow: React.FC<ItemRowProps> = ({
   item,
   onToggle,
   onDelete,
+  onEdit,
 }) => {
   return (
     <View style={[styles.card, item.isCompleted && styles.cardCompleted]}>
@@ -29,8 +31,12 @@ export const ItemRow: React.FC<ItemRowProps> = ({
         {item.isCompleted && <Text style={styles.checkmark}>✓</Text>}
       </TouchableOpacity>
 
-      {/* Content */}
-      <View style={styles.content}>
+      {/* Content (Tap to Edit) */}
+      <TouchableOpacity
+        activeOpacity={0.7}
+        onPress={() => onEdit && onEdit(item)}
+        style={styles.content}
+      >
         <View style={styles.titleRow}>
           <Text
             style={[styles.title, item.isCompleted && styles.titleCompleted]}
@@ -52,14 +58,26 @@ export const ItemRow: React.FC<ItemRowProps> = ({
               : `Added by ${item.addedBy || 'Partner'}`}
           </Text>
         </View>
-      </View>
+      </TouchableOpacity>
+
+      {/* Edit Button */}
+      {onEdit && (
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => onEdit(item)}
+          style={styles.editButton}
+          hitSlop={{ top: 10, bottom: 10, left: 6, right: 6 }}
+        >
+          <Text style={styles.editIcon}>✏️</Text>
+        </TouchableOpacity>
+      )}
 
       {/* Delete Action */}
       <TouchableOpacity
         activeOpacity={0.7}
         onPress={() => onDelete(item.id)}
         style={styles.deleteButton}
-        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        hitSlop={{ top: 10, bottom: 10, left: 6, right: 10 }}
       >
         <Text style={styles.deleteIcon}>✕</Text>
       </TouchableOpacity>
@@ -144,9 +162,16 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#8E8E93',
   },
+  editButton: {
+    padding: 6,
+    marginLeft: 6,
+  },
+  editIcon: {
+    fontSize: 14,
+  },
   deleteButton: {
     padding: 6,
-    marginLeft: 8,
+    marginLeft: 4,
   },
   deleteIcon: {
     fontSize: 14,
