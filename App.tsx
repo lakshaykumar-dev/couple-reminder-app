@@ -22,8 +22,10 @@ import { CoupleTab, CoupleItem, CoupleProfile, ActivityNotification } from './sr
 import {
   getLocalProfile,
   saveLocalProfile,
+  getCachedTabs,
+  getCachedItems,
   subscribeToTabs,
-  subscribeToItems,
+  subscribeToAllItems,
   addNewTab,
   addItem,
   toggleItem,
@@ -48,10 +50,10 @@ function MainScreen() {
   const [isPairingVisible, setPairingVisible] = useState(false);
   const [isAddTabVisible, setAddTabVisible] = useState(false);
 
-  // Tabs & Items
+  // Tabs & All Items (Cached in memory for 0ms lag-free tab switching)
   const [tabs, setTabs] = useState<CoupleTab[]>([]);
   const [activeTabId, setActiveTabId] = useState<string>('');
-  const [items, setItems] = useState<CoupleItem[]>([]);
+  const [allItems, setAllItems] = useState<CoupleItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Quick Add input state
@@ -83,24 +85,36 @@ function MainScreen() {
   // Partner Notification Banner
   const [notification, setNotification] = useState<ActivityNotification | null>(null);
 
-  // 1. Load Local Profile
+  // 1. Load Local Profile & Instant Cached Data
   useEffect(() => {
     async function load() {
       const p = await getLocalProfile();
       setProfile(p);
+
+      // Instant 0ms display from local cache
+      const [cachedTabs, cachedItems] = await Promise.all([
+        getCachedTabs(p.coupleId),
+        getCachedItems(p.coupleId),
+      ]);
+      if (cachedTabs.length > 0) {
+        setTabs(cachedTabs);
+        setActiveTabId(cachedTabs[0].id);
+        setLoading(false);
+      }
+      if (cachedItems.length > 0) {
+        setAllItems(cachedItems);
+      }
     }
     load();
   }, []);
 
-  // 2. Real-time Subscription to Tabs for Current Couple Space
+  // 2. Real-time Subscription to Tabs & All Items for Current Couple Space
   useEffect(() => {
     if (!profile.coupleId) return;
 
-    setLoading(true);
     const unsubscribeTabs = subscribeToTabs(profile.coupleId, (fetchedTabs) => {
       setTabs(fetchedTabs);
       setLoading(false);
-      // Default to first tab if none active or current active was deleted
       setActiveTabId((currentActive) => {
         if (!currentActive || !fetchedTabs.some((t) => t.id === currentActive)) {
           return fetchedTabs[0]?.id || '';
@@ -109,28 +123,18 @@ function MainScreen() {
       });
     });
 
-    return () => unsubscribeTabs();
+    const unsubscribeItems = subscribeToAllItems(profile.coupleId, (fetchedItems) => {
+      setAllItems(fetchedItems);
+      setLoading(false);
+    });
+
+    return () => {
+      unsubscribeTabs();
+      unsubscribeItems();
+    };
   }, [profile.coupleId]);
 
-  // 3. Real-time Subscription to Items in Active Tab
-  useEffect(() => {
-    if (!profile.coupleId || !activeTabId) {
-      setItems([]);
-      return;
-    }
-
-    const unsubscribeItems = subscribeToItems(
-      profile.coupleId,
-      activeTabId,
-      (fetchedItems) => {
-        setItems(fetchedItems);
-      }
-    );
-
-    return () => unsubscribeItems();
-  }, [profile.coupleId, activeTabId]);
-
-  // 4. Real-time Partner Activity Listener (In-app Notification Banner)
+  // 3. Real-time Partner Activity Listener (In-app Notification Banner)
   useEffect(() => {
     if (!profile.coupleId) return;
 
@@ -151,8 +155,22 @@ function MainScreen() {
     [tabs, activeTabId]
   );
 
-  // Calculate pending items per tab for tab badges
-  const pendingCount = items.filter((i) => !i.isCompleted).length;
+  // Filter items for the active tab instantly in memory (0ms lag, no cross-tab data leak)
+  const activeTabItems = useMemo(() => {
+    if (!activeTabId) return [];
+    return allItems.filter((item) => item.tabId === activeTabId);
+  }, [allItems, activeTabId]);
+
+  // Real-time pending items count per tab for all tab badges
+  const tabItemCounts = useMemo(() => {
+    const counts: { [tabId: string]: number } = {};
+    allItems.forEach((item) => {
+      if (!item.isCompleted) {
+        counts[item.tabId] = (counts[item.tabId] || 0) + 1;
+      }
+    });
+    return counts;
+  }, [allItems]);
 
   // Handle Add Item
   const handleAddItem = async () => {
@@ -189,11 +207,10 @@ function MainScreen() {
     try {
       await toggleItem(
         profile.coupleId,
-        activeTabId,
-        currentTab.name,
         item.id,
         item.isCompleted,
         item.text,
+        currentTab.name,
         profile.myName
       );
     } catch (e: any) {
@@ -208,7 +225,7 @@ function MainScreen() {
       {
         text: 'Delete',
         style: 'destructive',
-        onPress: () => deleteItem(profile.coupleId, activeTabId, itemId),
+        onPress: () => deleteItem(profile.coupleId, itemId),
       },
     ]);
   };
@@ -278,9 +295,7 @@ function MainScreen() {
         activeTabId={activeTabId}
         onSelectTab={setActiveTabId}
         onOpenAddTab={() => setAddTabVisible(true)}
-        tabItemCounts={{
-          [activeTabId]: pendingCount,
-        }}
+        tabItemCounts={tabItemCounts}
       />
 
       {/* Items List Content */}
@@ -292,7 +307,7 @@ function MainScreen() {
           </View>
         ) : (
           <FlatList
-            data={items}
+            data={activeTabItems}
             keyExtractor={(item) => item.id}
             keyboardShouldPersistTaps="handled"
             renderItem={({ item }) => (
