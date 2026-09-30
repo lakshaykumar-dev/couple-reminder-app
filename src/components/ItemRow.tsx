@@ -37,18 +37,12 @@ export const ItemRow: React.FC<ItemRowProps> = ({
         onPress={() => onEdit && onEdit(item)}
         style={styles.content}
       >
-        <View style={styles.titleRow}>
-          <Text
-            style={[styles.title, item.isCompleted && styles.titleCompleted]}
-          >
-            {item.text}
-          </Text>
-          {item.quantity ? (
-            <View style={styles.quantityBadge}>
-              <Text style={styles.quantityText}>{item.quantity}</Text>
-            </View>
-          ) : null}
-        </View>
+        <Text
+          style={[styles.title, item.isCompleted && styles.titleCompleted]}
+          numberOfLines={2}
+        >
+          {item.text}
+        </Text>
 
         {/* Attribution Subtitle */}
         <View style={styles.attributionRow}>
@@ -60,27 +54,28 @@ export const ItemRow: React.FC<ItemRowProps> = ({
         </View>
       </TouchableOpacity>
 
-      {/* Edit Button */}
-      {onEdit && (
+      {/* Action Buttons: Clean Minimalist Edit & Delete */}
+      <View style={styles.actionsContainer}>
+        {onEdit && (
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => onEdit(item)}
+            style={styles.iconCircle}
+            hitSlop={{ top: 8, bottom: 8, left: 6, right: 6 }}
+          >
+            <Text style={styles.editSymbol}>✎</Text>
+          </TouchableOpacity>
+        )}
+
         <TouchableOpacity
           activeOpacity={0.7}
-          onPress={() => onEdit(item)}
-          style={styles.editButton}
-          hitSlop={{ top: 10, bottom: 10, left: 6, right: 6 }}
+          onPress={() => onDelete(item.id)}
+          style={[styles.iconCircle, styles.deleteCircle]}
+          hitSlop={{ top: 8, bottom: 8, left: 6, right: 8 }}
         >
-          <Text style={styles.editIcon}>✏️</Text>
+          <Text style={styles.deleteSymbol}>✕</Text>
         </TouchableOpacity>
-      )}
-
-      {/* Delete Action */}
-      <TouchableOpacity
-        activeOpacity={0.7}
-        onPress={() => onDelete(item.id)}
-        style={styles.deleteButton}
-        hitSlop={{ top: 10, bottom: 10, left: 6, right: 10 }}
-      >
-        <Text style={styles.deleteIcon}>✕</Text>
-      </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -90,92 +85,87 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    paddingVertical: 12,
+    paddingVertical: 13,
     paddingHorizontal: 16,
-    borderRadius: 14,
+    borderRadius: 16,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: '#F0F0F0',
+    borderColor: '#F3F4F6',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.04,
     shadowRadius: 3,
     elevation: 1,
   },
   cardCompleted: {
-    backgroundColor: '#FAF9F9',
-    borderColor: '#ECEBEB',
-    opacity: 0.75,
+    backgroundColor: '#FAFAFA',
+    borderColor: '#ECECEC',
+    opacity: 0.7,
   },
   checkbox: {
     width: 24,
     height: 24,
-    borderRadius: 7,
+    borderRadius: 8,
     borderWidth: 2,
-    borderColor: '#C7C7CC',
+    borderColor: '#D1D5DB',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 14,
   },
   checkboxCompleted: {
-    backgroundColor: '#2EC4B6',
-    borderColor: '#2EC4B6',
+    backgroundColor: '#10B981',
+    borderColor: '#10B981',
   },
   checkmark: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '800',
   },
   content: {
     flex: 1,
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flexWrap: 'wrap',
+    paddingRight: 8,
   },
   title: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#2B2B2B',
+    color: '#1F2937',
+    lineHeight: 20,
   },
   titleCompleted: {
     textDecorationLine: 'line-through',
-    color: '#8E8E93',
-  },
-  quantityBadge: {
-    marginLeft: 8,
-    backgroundColor: '#FFF0F3',
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-    borderRadius: 8,
-  },
-  quantityText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#FF4D6D',
+    color: '#9CA3AF',
   },
   attributionRow: {
-    marginTop: 3,
+    marginTop: 4,
   },
   attributionText: {
     fontSize: 12,
-    color: '#8E8E93',
+    color: '#9CA3AF',
   },
-  editButton: {
-    padding: 6,
-    marginLeft: 6,
+  actionsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
-  editIcon: {
-    fontSize: 14,
+  iconCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#F3F4F6',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  deleteButton: {
-    padding: 6,
-    marginLeft: 4,
+  editSymbol: {
+    fontSize: 13,
+    color: '#4B5563',
+    fontWeight: '700',
   },
-  deleteIcon: {
-    fontSize: 14,
-    color: '#C7C7CC',
-    fontWeight: 'bold',
+  deleteCircle: {
+    backgroundColor: '#F9FAFB',
+  },
+  deleteSymbol: {
+    fontSize: 11,
+    color: '#9CA3AF',
+    fontWeight: '800',
   },
 });

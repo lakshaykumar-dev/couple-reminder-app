@@ -67,7 +67,6 @@ function MainScreen() {
 
   // Quick Add input state
   const [newItemText, setNewItemText] = useState('');
-  const [newItemQty, setNewItemQty] = useState('');
 
   // Keyboard height state for precise input positioning above the keyboard
   const [keyboardHeight, setKeyboardHeight] = useState(0);
@@ -199,11 +198,9 @@ function MainScreen() {
         activeTabId,
         currentTab.name,
         text,
-        newItemQty.trim(),
         profile.myName
       );
       setNewItemText('');
-      setNewItemQty('');
       Keyboard.dismiss();
     } catch (e: any) {
       Alert.alert('Error', e.message || 'Could not add item.');
@@ -298,7 +295,6 @@ function MainScreen() {
   const handleSaveEditedItem = async (
     itemId: string,
     newText: string,
-    newQuantity: string,
     newTabId: string
   ) => {
     try {
@@ -307,7 +303,6 @@ function MainScreen() {
         profile.coupleId,
         itemId,
         newText,
-        newQuantity,
         newTabId,
         targetTab?.name || 'Tab',
         profile.myName
@@ -439,14 +434,6 @@ function MainScreen() {
           onChangeText={setNewItemText}
           returnKeyType="done"
           onSubmitEditing={handleAddItem}
-        />
-        <TextInput
-          style={styles.qtyInput}
-          placeholder="Qty"
-          placeholderTextColor="#999999"
-          value={newItemQty}
-          onChangeText={setNewItemQty}
-          maxLength={10}
         />
         <TouchableOpacity
           activeOpacity={0.8}
@@ -601,27 +588,17 @@ const styles = StyleSheet.create({
   textInput: {
     flex: 1,
     backgroundColor: '#F5F6F8',
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    fontSize: 14,
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 15,
     color: '#1A1A1A',
-  },
-  qtyInput: {
-    width: 65,
-    backgroundColor: '#F5F6F8',
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 10,
-    fontSize: 14,
-    color: '#1A1A1A',
-    textAlign: 'center',
   },
   addButton: {
     backgroundColor: '#FF4D6D',
-    borderRadius: 12,
-    paddingVertical: 11,
-    paddingHorizontal: 18,
+    borderRadius: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },

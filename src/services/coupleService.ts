@@ -187,18 +187,21 @@ export async function addItem(
   tabId: string,
   tabName: string,
   text: string,
-  quantity: string,
-  addedBy: string
+  addedBy: string,
+  quantity: string = ''
 ) {
   const itemsCol = collection(db, 'couples', coupleId, 'items');
-  await addDoc(itemsCol, {
+  const payload: any = {
     text: text.trim(),
-    quantity: quantity.trim(),
     tabId,
     isCompleted: false,
     addedBy,
     createdAt: Date.now(),
-  });
+  };
+  if (quantity.trim()) {
+    payload.quantity = quantity.trim();
+  }
+  await addDoc(itemsCol, payload);
 
   // Log activity for partner notification
   const qtyText = quantity.trim() ? ` (${quantity.trim()})` : '';
@@ -214,18 +217,21 @@ export async function updateItem(
   coupleId: string,
   itemId: string,
   text: string,
-  quantity: string,
   tabId: string,
   tabName: string,
-  actorName: string
+  actorName: string,
+  quantity: string = ''
 ) {
   const itemDoc = doc(db, 'couples', coupleId, 'items', itemId);
-  await updateDoc(itemDoc, {
+  const payload: any = {
     text: text.trim(),
-    quantity: quantity.trim(),
     tabId,
     updatedAt: Date.now(),
-  });
+  };
+  if (quantity.trim()) {
+    payload.quantity = quantity.trim();
+  }
+  await updateDoc(itemDoc, payload);
 
   const qtyText = quantity.trim() ? ` (${quantity.trim()})` : '';
   await logActivity(

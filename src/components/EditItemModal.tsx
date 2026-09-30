@@ -16,7 +16,7 @@ interface EditItemModalProps {
   item: CoupleItem | null;
   tabs: CoupleTab[];
   onClose: () => void;
-  onSave: (itemId: string, text: string, quantity: string, tabId: string) => void;
+  onSave: (itemId: string, text: string, tabId: string) => void;
 }
 
 export const EditItemModal: React.FC<EditItemModalProps> = ({
@@ -27,13 +27,11 @@ export const EditItemModal: React.FC<EditItemModalProps> = ({
   onSave,
 }) => {
   const [text, setText] = useState('');
-  const [quantity, setQuantity] = useState('');
   const [selectedTabId, setSelectedTabId] = useState('');
 
   useEffect(() => {
     if (item) {
       setText(item.text);
-      setQuantity(item.quantity || '');
       setSelectedTabId(item.tabId);
     }
   }, [item]);
@@ -46,7 +44,7 @@ export const EditItemModal: React.FC<EditItemModalProps> = ({
     }
     if (!item) return;
 
-    onSave(item.id, trimmed, quantity.trim(), selectedTabId);
+    onSave(item.id, trimmed, selectedTabId);
     onClose();
   };
 
@@ -61,34 +59,24 @@ export const EditItemModal: React.FC<EditItemModalProps> = ({
     >
       <View style={styles.overlay}>
         <View style={styles.modalBox}>
-          <Text style={styles.title}>Edit Item ✏️</Text>
+          <Text style={styles.title}>Edit Item</Text>
           <Text style={styles.subtitle}>
-            Update task details or move it to a different tab.
+            Update task name or move it to a different tab.
           </Text>
 
           {/* Item Name */}
-          <Text style={styles.sectionLabel}>Item Name:</Text>
+          <Text style={styles.sectionLabel}>Item Name</Text>
           <TextInput
             style={styles.input}
             placeholder="e.g. Almond Milk..."
-            placeholderTextColor="#999999"
+            placeholderTextColor="#9CA3AF"
             value={text}
             onChangeText={setText}
-          />
-
-          {/* Quantity */}
-          <Text style={styles.sectionLabel}>Quantity / Note (optional):</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="e.g. 2x, 500g, tonight..."
-            placeholderTextColor="#999999"
-            value={quantity}
-            onChangeText={setQuantity}
-            maxLength={30}
+            autoFocus
           />
 
           {/* Move to Tab */}
-          <Text style={styles.sectionLabel}>Tab Category:</Text>
+          <Text style={styles.sectionLabel}>Tab Category</Text>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -130,7 +118,7 @@ export const EditItemModal: React.FC<EditItemModalProps> = ({
             </TouchableOpacity>
 
             <TouchableOpacity
-              activeOpacity={0.7}
+              activeOpacity={0.8}
               onPress={handleSave}
               style={styles.saveButton}
             >
