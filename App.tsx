@@ -42,6 +42,8 @@ import { AddTabModal } from './src/components/AddTabModal';
 import { EditTabModal } from './src/components/EditTabModal';
 import { EditItemModal } from './src/components/EditItemModal';
 import { PairingModal } from './src/components/PairingModal';
+import { registerDeviceToken, onForegroundMessage } from './src/services/notificationService';
+
 
 function MainScreen() {
   const insets = useSafeAreaInsets();
@@ -155,6 +157,23 @@ function MainScreen() {
     );
 
     return () => unsubscribeActivity();
+  }, [profile.coupleId, profile.myName]);
+
+  // 4. Register FCM Push Notification Device Token
+  useEffect(() => {
+    if (!profile.coupleId || !profile.myName) return;
+    registerDeviceToken(profile.coupleId, profile.myName);
+
+    const unsubscribeFCM = onForegroundMessage((title, body) => {
+      setNotification({
+        id: String(Date.now()),
+        message: body,
+        author: 'Partner',
+        timestamp: Date.now(),
+      });
+    });
+
+    return () => unsubscribeFCM();
   }, [profile.coupleId, profile.myName]);
 
   // Active Tab metadata

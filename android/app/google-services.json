@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "957500636729",
+    "project_id": "lens-of-lakshay",
+    "storage_bucket": "lens-of-lakshay.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:957500636729:android:4136ff86130e9625d117e8",
+        "android_client_info": {
+          "package_name": "com.rememberapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD_tOPubGSsboqfdW7rYU8D4FbKpuOHTHE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
