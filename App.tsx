@@ -43,6 +43,7 @@ import { AddTabModal } from './src/components/AddTabModal';
 import { EditTabModal } from './src/components/EditTabModal';
 import { EditItemModal } from './src/components/EditItemModal';
 import { PairingModal } from './src/components/PairingModal';
+import { SplashScreen } from './src/components/SplashScreen';
 import { registerDeviceToken, onForegroundMessage } from './src/services/notificationService';
 
 
@@ -520,6 +521,9 @@ function MainScreen() {
         onClose={() => setPairingVisible(false)}
         onSaveProfile={handleSaveProfile}
       />
+
+      {/* AI-Generated Splash Screen with gentle fade */}
+      <SplashScreen minDurationMs={1800} />
     </View>
   );
 }
