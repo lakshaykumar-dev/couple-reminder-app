@@ -188,6 +188,7 @@ export async function addItem(
   tabName: string,
   text: string,
   addedBy: string,
+  reminderEnabled: boolean = true,
   quantity: string = ''
 ) {
   const itemsCol = collection(db, 'couples', coupleId, 'items');
@@ -195,6 +196,7 @@ export async function addItem(
     text: text.trim(),
     tabId,
     isCompleted: false,
+    reminderEnabled: reminderEnabled,
     addedBy,
     createdAt: Date.now(),
   };
@@ -220,6 +222,7 @@ export async function updateItem(
   tabId: string,
   tabName: string,
   actorName: string,
+  reminderEnabled?: boolean,
   quantity: string = ''
 ) {
   const itemDoc = doc(db, 'couples', coupleId, 'items', itemId);
@@ -228,6 +231,9 @@ export async function updateItem(
     tabId,
     updatedAt: Date.now(),
   };
+  if (reminderEnabled !== undefined) {
+    payload.reminderEnabled = reminderEnabled;
+  }
   if (quantity.trim()) {
     payload.quantity = quantity.trim();
   }
@@ -239,6 +245,19 @@ export async function updateItem(
     `${actorName} updated "${text.trim()}${qtyText}" in ${tabName}`,
     actorName
   );
+}
+
+// Toggle Task Reminder (3-hour periodic alert)
+export async function toggleItemReminder(
+  coupleId: string,
+  itemId: string,
+  currentState: boolean
+) {
+  const itemDoc = doc(db, 'couples', coupleId, 'items', itemId);
+  await updateDoc(itemDoc, {
+    reminderEnabled: !currentState,
+    updatedAt: Date.now(),
+  });
 }
 
 // Update / Edit a Tab

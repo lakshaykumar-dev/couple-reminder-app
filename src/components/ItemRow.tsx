@@ -12,6 +12,7 @@ interface ItemRowProps {
   onToggle: (item: CoupleItem) => void;
   onDelete: (id: string) => void;
   onEdit?: (item: CoupleItem) => void;
+  onToggleReminder?: (item: CoupleItem) => void;
 }
 
 export const ItemRow: React.FC<ItemRowProps> = ({
@@ -19,7 +20,10 @@ export const ItemRow: React.FC<ItemRowProps> = ({
   onToggle,
   onDelete,
   onEdit,
+  onToggleReminder,
 }) => {
+  const isReminderOn = item.reminderEnabled !== false;
+
   return (
     <View style={[styles.card, item.isCompleted && styles.cardCompleted]}>
       {/* Checkbox */}
@@ -44,18 +48,33 @@ export const ItemRow: React.FC<ItemRowProps> = ({
           {item.text}
         </Text>
 
-        {/* Attribution Subtitle */}
+        {/* Attribution & Reminder Status Subtitle */}
         <View style={styles.attributionRow}>
           <Text style={styles.attributionText}>
             {item.isCompleted
               ? `Done by ${item.completedBy || 'Partner'} ✨`
               : `Added by ${item.addedBy || 'Partner'}`}
+            {!item.isCompleted && isReminderOn ? ' • 3h reminder on 🔔' : ''}
           </Text>
         </View>
       </TouchableOpacity>
 
-      {/* Action Buttons: Clean Minimalist Edit & Delete */}
+      {/* Action Buttons: Clean Minimalist Bell, Edit & Delete */}
       <View style={styles.actionsContainer}>
+        {onToggleReminder && !item.isCompleted && (
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => onToggleReminder(item)}
+            style={[
+              styles.iconCircle,
+              isReminderOn ? styles.bellActiveCircle : styles.bellInactiveCircle,
+            ]}
+            hitSlop={{ top: 8, bottom: 8, left: 6, right: 6 }}
+          >
+            <Text style={styles.bellIcon}>{isReminderOn ? '🔔' : '🔕'}</Text>
+          </TouchableOpacity>
+        )}
+
         {onEdit && (
           <TouchableOpacity
             activeOpacity={0.7}
@@ -154,6 +173,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#F3F4F6',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  bellActiveCircle: {
+    backgroundColor: '#FFF0F3',
+    borderWidth: 1,
+    borderColor: '#FFD6E0',
+  },
+  bellInactiveCircle: {
+    backgroundColor: '#F3F4F6',
+    opacity: 0.6,
+  },
+  bellIcon: {
+    fontSize: 12,
   },
   editSymbol: {
     fontSize: 13,

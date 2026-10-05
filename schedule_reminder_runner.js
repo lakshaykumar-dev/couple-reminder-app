@@ -31,7 +31,16 @@ async function checkAndSendUnfinishedReminders() {
       return;
     }
 
-    const unfinishedItems = itemsSnapshot.docs.map(doc => doc.data());
+    // Filter items where reminderEnabled is not explicitly set to false
+    const unfinishedItems = itemsSnapshot.docs
+      .map(doc => doc.data())
+      .filter(item => item.reminderEnabled !== false);
+
+    if (unfinishedItems.length === 0) {
+      console.log('[Scheduler] No unfinished tasks with 3-hour reminder active ✨');
+      return;
+    }
+
     const count = unfinishedItems.length;
     const taskNames = unfinishedItems.slice(0, 3).map(i => `"${i.text}"`).join(', ');
     const moreSuffix = count > 3 ? ` and ${count - 3} more` : '';
@@ -39,7 +48,7 @@ async function checkAndSendUnfinishedReminders() {
     const title = `Reminder: ${count} Pending Task${count > 1 ? 's' : ''} ⏰`;
     const body = `Still unfinished: ${taskNames}${moreSuffix}. Let's get them done! 💕`;
 
-    console.log(`[Scheduler] Found ${count} unfinished tasks. Preparing notification: "${body}"`);
+    console.log(`[Scheduler] Found ${count} reminder-active unfinished tasks. Preparing notification: "${body}"`);
 
     // 2. Fetch member device tokens
     const membersSnapshot = await getDocs(collection(db, 'couples', COUPLE_ID, 'members'));

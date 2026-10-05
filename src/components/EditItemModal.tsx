@@ -16,7 +16,7 @@ interface EditItemModalProps {
   item: CoupleItem | null;
   tabs: CoupleTab[];
   onClose: () => void;
-  onSave: (itemId: string, text: string, tabId: string) => void;
+  onSave: (itemId: string, text: string, tabId: string, reminderEnabled: boolean) => void;
 }
 
 export const EditItemModal: React.FC<EditItemModalProps> = ({
@@ -28,11 +28,13 @@ export const EditItemModal: React.FC<EditItemModalProps> = ({
 }) => {
   const [text, setText] = useState('');
   const [selectedTabId, setSelectedTabId] = useState('');
+  const [reminderEnabled, setReminderEnabled] = useState(true);
 
   useEffect(() => {
     if (item) {
       setText(item.text);
       setSelectedTabId(item.tabId);
+      setReminderEnabled(item.reminderEnabled !== false);
     }
   }, [item]);
 
@@ -44,7 +46,7 @@ export const EditItemModal: React.FC<EditItemModalProps> = ({
     }
     if (!item) return;
 
-    onSave(item.id, trimmed, selectedTabId);
+    onSave(item.id, trimmed, selectedTabId, reminderEnabled);
     onClose();
   };
 
@@ -61,7 +63,7 @@ export const EditItemModal: React.FC<EditItemModalProps> = ({
         <View style={styles.modalBox}>
           <Text style={styles.title}>Edit Item</Text>
           <Text style={styles.subtitle}>
-            Update task name or move it to a different tab.
+            Update task details, category, or reminder alerts.
           </Text>
 
           {/* Item Name */}
@@ -106,6 +108,31 @@ export const EditItemModal: React.FC<EditItemModalProps> = ({
               );
             })}
           </ScrollView>
+
+          {/* 3-Hour Push Reminder Toggle */}
+          <Text style={styles.sectionLabel}>3-Hour Push Reminder</Text>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => setReminderEnabled(!reminderEnabled)}
+            style={[
+              styles.reminderToggleCard,
+              reminderEnabled && styles.reminderToggleCardActive,
+            ]}
+          >
+            <View style={[styles.bellBadge, reminderEnabled && styles.bellBadgeActive]}>
+              <Text style={styles.bellBadgeIcon}>{reminderEnabled ? '🔔' : '🔕'}</Text>
+            </View>
+            <View style={styles.reminderTextContainer}>
+              <Text style={[styles.reminderTitle, reminderEnabled && styles.reminderTitleActive]}>
+                {reminderEnabled ? '3-Hour Reminder Active' : 'Reminder Disabled'}
+              </Text>
+              <Text style={styles.reminderSubtitle}>
+                {reminderEnabled
+                  ? 'Sends push notification every 3 hours while unfinished'
+                  : 'No periodic alerts will be sent'}
+              </Text>
+            </View>
+          </TouchableOpacity>
 
           {/* Action Buttons */}
           <View style={styles.buttonRow}>
@@ -210,6 +237,51 @@ const styles = StyleSheet.create({
   tabChipLabelSelected: {
     color: '#FF4D6D',
     fontWeight: '700',
+  },
+  reminderToggleCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: 14,
+    backgroundColor: '#F9FAFB',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    marginBottom: 20,
+    gap: 12,
+  },
+  reminderToggleCardActive: {
+    backgroundColor: '#FFF5F7',
+    borderColor: '#FFCCD5',
+  },
+  bellBadge: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#F3F4F6',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  bellBadgeActive: {
+    backgroundColor: '#FFE5EC',
+  },
+  bellBadgeIcon: {
+    fontSize: 18,
+  },
+  reminderTextContainer: {
+    flex: 1,
+  },
+  reminderTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#6B7280',
+  },
+  reminderTitleActive: {
+    color: '#FF4D6D',
+  },
+  reminderSubtitle: {
+    fontSize: 11,
+    color: '#9CA3AF',
+    marginTop: 2,
   },
   buttonRow: {
     flexDirection: 'row',

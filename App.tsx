@@ -34,6 +34,7 @@ import {
   toggleItem,
   deleteItem,
   subscribeToPartnerActivity,
+  toggleItemReminder,
 } from './src/services/coupleService';
 import { TopTabBar } from './src/components/TopTabBar';
 import { ItemRow } from './src/components/ItemRow';
@@ -69,6 +70,7 @@ function MainScreen() {
 
   // Quick Add input state
   const [newItemText, setNewItemText] = useState('');
+  const [newItemReminder, setNewItemReminder] = useState(true);
 
   // Keyboard height state for precise input positioning above the keyboard
   const [keyboardHeight, setKeyboardHeight] = useState(0);
@@ -217,7 +219,8 @@ function MainScreen() {
         activeTabId,
         currentTab.name,
         text,
-        profile.myName
+        profile.myName,
+        newItemReminder
       );
       setNewItemText('');
       Keyboard.dismiss();
@@ -226,7 +229,7 @@ function MainScreen() {
     }
   };
 
-  // Handle Toggle Item
+  // Handle Toggle Item Complete
   const handleToggle = async (item: CoupleItem) => {
     if (!currentTab) return;
     try {
@@ -240,6 +243,19 @@ function MainScreen() {
       );
     } catch (e: any) {
       console.error('Toggle error:', e);
+    }
+  };
+
+  // Handle Toggle Reminder (3-Hour Push Notification)
+  const handleToggleReminder = async (item: CoupleItem) => {
+    try {
+      await toggleItemReminder(
+        profile.coupleId,
+        item.id,
+        item.reminderEnabled !== false
+      );
+    } catch (e: any) {
+      console.error('Reminder toggle error:', e);
     }
   };
 
@@ -314,7 +330,8 @@ function MainScreen() {
   const handleSaveEditedItem = async (
     itemId: string,
     newText: string,
-    newTabId: string
+    newTabId: string,
+    reminderEnabled?: boolean
   ) => {
     try {
       const targetTab = tabs.find((t) => t.id === newTabId) || currentTab;
@@ -324,7 +341,8 @@ function MainScreen() {
         newText,
         newTabId,
         targetTab?.name || 'Tab',
-        profile.myName
+        profile.myName,
+        reminderEnabled
       );
     } catch (e: any) {
       Alert.alert('Error', e.message || 'Could not update item.');
@@ -415,6 +433,7 @@ function MainScreen() {
                 onToggle={handleToggle}
                 onDelete={handleDelete}
                 onEdit={(it) => setEditingItem(it)}
+                onToggleReminder={handleToggleReminder}
               />
             )}
             contentContainerStyle={styles.listContent}
@@ -454,6 +473,16 @@ function MainScreen() {
           returnKeyType="done"
           onSubmitEditing={handleAddItem}
         />
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => setNewItemReminder((prev) => !prev)}
+          style={[
+            styles.bellToggleBtn,
+            newItemReminder ? styles.bellToggleBtnActive : styles.bellToggleBtnInactive,
+          ]}
+        >
+          <Text style={styles.bellToggleText}>{newItemReminder ? '🔔' : '🔕'}</Text>
+        </TouchableOpacity>
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={handleAddItem}
@@ -625,5 +654,24 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: '700',
     fontSize: 14,
+  },
+  bellToggleBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+  },
+  bellToggleBtnActive: {
+    backgroundColor: '#FFF0F3',
+    borderColor: '#FFD6DE',
+  },
+  bellToggleBtnInactive: {
+    backgroundColor: '#F5F5F7',
+    borderColor: '#E5E5EA',
+  },
+  bellToggleText: {
+    fontSize: 18,
   },
 });

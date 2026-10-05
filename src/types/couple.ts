@@ -16,6 +16,7 @@ export interface CoupleItem {
   completedBy?: string;
   createdAt: number;
   updatedAt?: number;
+  reminderEnabled?: boolean;
 }
 
 export interface CoupleProfile {
