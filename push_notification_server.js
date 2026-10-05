@@ -1,13 +1,23 @@
 const fs = require('fs');
 const crypto = require('crypto');
 
-// Load Service Account Key
-const keyFiles = fs.readdirSync('.').filter(f => f.includes('firebase-adminsdk') && f.endsWith('.json'));
-if (keyFiles.length === 0) {
-  console.error('No service account key found.');
-  process.exit(1);
+// Load Service Account Key from environment variable or local file
+let sa;
+if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+  try {
+    sa = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+  } catch (e) {
+    console.error('Invalid FIREBASE_SERVICE_ACCOUNT_KEY JSON:', e);
+    process.exit(1);
+  }
+} else {
+  const keyFiles = fs.readdirSync('.').filter(f => f.includes('firebase-adminsdk') && f.endsWith('.json'));
+  if (keyFiles.length === 0) {
+    console.error('No service account key found.');
+    process.exit(1);
+  }
+  sa = JSON.parse(fs.readFileSync(keyFiles[0], 'utf8'));
 }
-const sa = JSON.parse(fs.readFileSync(keyFiles[0], 'utf8'));
 
 let cachedToken = null;
 let tokenExpiry = 0;

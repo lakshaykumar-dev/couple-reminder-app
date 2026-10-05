@@ -74,12 +74,26 @@ module.exports = {
 };
 
 if (require.main === module) {
-  console.log('⏰ Starting 3-Hour Unfinished Task Reminder Service...');
-  console.log(`Checking couple space: "${COUPLE_ID}" every 3 hours.`);
+  const runOnce = process.argv.includes('--once');
 
-  // Run immediately once on start
-  checkAndSendUnfinishedReminders();
+  if (runOnce) {
+    console.log('⏰ Running one-time unfinished task reminder check...');
+    checkAndSendUnfinishedReminders().then(() => {
+      console.log('Done.');
+      process.exit(0);
+    }).catch((err) => {
+      console.error(err);
+      process.exit(1);
+    });
+  } else {
+    console.log('⏰ Starting 3-Hour Unfinished Task Reminder Service...');
+    console.log(`Checking couple space: "${COUPLE_ID}" every 3 hours.`);
 
-  // Schedule every 3 hours
-  setInterval(checkAndSendUnfinishedReminders, THREE_HOURS_MS);
+    // Run immediately once on start
+    checkAndSendUnfinishedReminders();
+
+    // Schedule every 3 hours
+    setInterval(checkAndSendUnfinishedReminders, THREE_HOURS_MS);
+  }
 }
+
